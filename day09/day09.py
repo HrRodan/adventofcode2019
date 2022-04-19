@@ -3,11 +3,19 @@ from itertools import permutations
 from typing import List, Iterable, Iterator, Dict
 
 with open('input.txt') as file:
-    program_start = [int(n) for n in file.readline().strip().split(',')]
+    program_raw = file.readline().strip()
 
-program_start_dict = defaultdict(lambda: 0)
-for i, c in enumerate(program_start):
-    program_start_dict[i] = c
+
+def string_to_program(program_raw: str):
+    program = (int(n) for n in program_raw.strip().split(','))
+    program_dict = defaultdict(lambda: 0)
+    for i, c in enumerate(program):
+        program_dict[i] = c
+
+    return program_dict
+
+
+program_start = string_to_program(program_raw)
 
 
 def get_value(mode: str, p_value: int, program: Dict[int, int], relative_base):
@@ -82,8 +90,11 @@ def run_program(program: Dict[int, int], p_input: Iterator[int]):
     return output
 
 
+assert run_program(string_to_program('109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99'), iter([])) == \
+       [109, 1, 204, -1, 1001, 100, 1, 100, 1008, 100, 16, 101, 1006, 101, 0, 99]
+
 # part 1
-print(run_program(program_start_dict, iter([1]))[0])
+print(run_program(program_start, iter([1]))[0])
 
 # part 2
-print(run_program(program_start_dict, iter([2]))[0])
+print(run_program(program_start, iter([2]))[0])
