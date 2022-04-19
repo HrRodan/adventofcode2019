@@ -1,0 +1,84 @@
+from collections import defaultdict
+from itertools import permutations
+from typing import List, Iterable, Iterator, Dict
+
+with open('input.txt') as file:
+    program_start = [int(n) for n in file.readline().strip().split(',')]
+
+program_start_dict = defaultdict(lambda: 0)
+for i, c in enumerate(program_start):
+    program_start_dict[i] = c
+
+
+def get_value(mode: str, p_value: int, program: Dict[int, int], relative_base):
+    if mode == '0':
+        return program[p_value]
+    elif mode == '1':
+        return p_value
+    elif mode == '2':
+        return program[p_value + relative_base]
+    else:
+        raise ValueError('Something went wrong!')
+
+
+def run_program(program: Dict[int, int], p_input: Iterator[int]):
+    program_final = program.copy()
+    output = []
+    i = 0
+    relative_base = 0
+    while True:
+        mode_opcode_str = str(program_final[i])
+        mode, opcode = mode_opcode_str[:-2], int(mode_opcode_str[-2:])
+        mode = f'0000{mode}'
+        if opcode == 99:
+            break
+        elif opcode in {1, 2}:
+            p1, p2, out = [program_final[x] for x in range(i + 1, i + 4)]
+            value1 = get_value(mode[-1], p1, program_final, relative_base)
+            value2 = get_value(mode[-2], p2, program_final, relative_base)
+            out_value = out if mode[-3] != '2' else out + relative_base
+            result = value1 + value2 if opcode == 1 else value1 * value2
+            program_final[out_value] = result
+            i += 4
+        elif opcode == 3:
+            out = program_final[i + 1]
+            out_value = out if mode[-1] != '2' else out + relative_base
+            program_final[out_value] = next(p_input)
+            i += 2
+        elif opcode == 4:
+            p = program_final[i + 1]
+            value = get_value(mode[-1], p, program_final, relative_base)
+            output.append(value)
+            i += 2
+        elif opcode in {5, 6}:
+            p1, p2 = [program_final[x] for x in range(i + 1, i + 3)]
+            value1 = get_value(mode[-1], p1, program_final, relative_base)
+            value2 = get_value(mode[-2], p2, program_final, relative_base)
+            if (opcode == 5 and value1 != 0) or (opcode == 6 and value1 == 0):
+                i = value2
+            else:
+                i = i + 3
+        elif opcode in {7, 8}:
+            p1, p2, out = [program_final[x] for x in range(i + 1, i + 4)]
+            value1 = get_value(mode[-1], p1, program_final, relative_base)
+            value2 = get_value(mode[-2], p2, program_final, relative_base)
+            out_value = out if mode[-3] != '2' else out + relative_base
+            if (opcode == 7 and value1 < value2) or (opcode == 8 and value1 == value2):
+                program_final[out_value] = 1
+            else:
+                program_final[out_value] = 0
+            i = i + 4
+        elif opcode == 9:
+            p = program_final[i + 1]
+            relative_base += get_value(mode[-1], p, program_final, relative_base)
+            i += 2
+        else:
+            raise ValueError('Something went wrong.')
+
+    return output
+
+#part 1
+print(run_program(program_start_dict, iter([1]))[0])
+
+#part 2
+print(run_program(program_start_dict, iter([2]))[0])
