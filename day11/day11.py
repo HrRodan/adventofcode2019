@@ -38,7 +38,6 @@ def get_set_position(mode: str, out: int, relative_base: int):
 
 def run_program(program: Dict[int, int], p_input: deque[int]):
     program_final = program.copy()
-    output = []
     i = 0
     relative_base = 0
     while True:
