@@ -16,9 +16,9 @@ while True:
     j += 1
     for i in range(1, 4):
         compare_positions = np.roll(positions, i, axis=0)
-        velocity = velocity + np.where(np.equal(positions, compare_positions), 0,
-                                       np.where(np.greater(positions, compare_positions), -1, 1)
-                                       )
+        velocity += np.where(np.equal(positions, compare_positions), 0,
+                             np.where(np.greater(positions, compare_positions), -1, 1)
+                             )
     positions += velocity
     # part 1
     if j == steps_part1:
@@ -26,12 +26,11 @@ while True:
         print(energy)
     # part 2
     for k in range(3):
-    # get frequency of velocity as difference between to times where velocity is zero (beinning - x)
+        # get frequency of velocity as difference between to times where velocity is zero (beginning - x)
         if not repeatv[k] and np.all(velocity[:, k] == 0):
             repeatv[k] = j
     if all(repeatv.values()) and j >= steps_part1:
         break
 
 # velocity period is only half of complete period -> multiply with 2
-print(math.lcm(*list(repeatv.values()))*2)
-
+print(math.lcm(*list(repeatv.values())) * 2)
