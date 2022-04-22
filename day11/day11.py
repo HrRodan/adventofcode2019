@@ -137,7 +137,7 @@ result = np.zeros((row, col), dtype=int)
 for k, v in hull_part2.items():
     result[-k[1], k[0]] = v
 
-#KBUEGZBK
+# KBUEGZBK
 plt.imshow(result, interpolation='none')
 plt.savefig('output.png')
 plt.show()
