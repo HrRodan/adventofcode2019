@@ -33,8 +33,8 @@ def get_educts(product: Tuple[str, int]):
     return [(e, count * relation) for e, count in educts]
 
 
-# The reaction layers defines layers in which reactants are allowed to react at the same time
-# This is necessary to collect all necessary educts before continuing
+# The reaction layers define layers in which reactants are allowed to react at the same time
+# This is necessary to collect all necessary educts before continuing and optimize the amount of reactants
 reaction_layers = defaultdict(set)
 i = 0
 reaction_layers[i] = {'ORE'}
@@ -46,6 +46,7 @@ while True:
     for c in previous:
         if c != 'FUEL':
             reaction_layers[i].update(get_products(c))
+
 
 max_layers = max(reaction_layers.keys())
 
