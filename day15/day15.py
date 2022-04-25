@@ -30,7 +30,7 @@ def get_direction(start: POINT_TYP, end: POINT_TYP):
     return cmd[(end[0] - start[0], end[1] - start[1])]
 
 
-def get_possible_places_and_update_graph(G: nx.Graph, visited):
+def get_possible_places_and_update_graph(G: nx.Graph):
     possible_places = set()
     for point, value in area.items():
         if value != 0:
