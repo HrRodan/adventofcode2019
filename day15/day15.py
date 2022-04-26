@@ -30,15 +30,14 @@ def get_direction(start: POINT_TYP, end: POINT_TYP):
     return cmd[(end[0] - start[0], end[1] - start[1])]
 
 
-def get_possible_places_and_update_graph(G: nx.Graph):
+def get_possible_places_and_update_graph(G: nx.Graph, to_vist : set):
     possible_places = set()
-    for point, value in area.items():
-        if value != 0:
-            for c in cmd.keys():
-                target = move(point, c)
-                if target not in area:
-                    G.add_edge(point, target)
-                    possible_places.add(target)
+    for point in to_vist:
+        for c in cmd.keys():
+            target = move(point, c)
+            if target not in area:
+                G.add_edge(point, target)
+                possible_places.add(target)
 
     return possible_places
 
@@ -49,10 +48,11 @@ p = run_program(start_program.copy(), p_input)
 G = nx.Graph()
 G.add_node(current_position)
 oxygen_location = 0
-#to_visit = {[current_position]}
+to_visit = {current_position}
 
 while True:
-    possible_places = get_possible_places_and_update_graph(G)
+    possible_places = get_possible_places_and_update_graph(G, to_visit)
+    to_visit = set()
     for pp in possible_places:
         path = nx.shortest_path(G, current_position, pp)
         for current_element, next_element in zip(path[:-1], path[1:]):
@@ -60,8 +60,8 @@ while True:
             p_input.append(d)
             output = next(p)
             area[next_element] = output
-            #to_visit.add(next_element)
             if output in {1, 2}:
+                to_visit.add(next_element)
                 G.add_edge(current_element, next_element)
                 current_position = next_element
                 if output == 2:
