@@ -51,7 +51,6 @@ def transform_signal_part2(start_signal, start_out_signal):
     signal = start_signal.copy()
     signal_length = len(start_signal)
     for p in range(PHASES):
-        print(p)
         signal_new = np.zeros(signal_length, dtype=np.uint)
         signal_new[-1] = start_signal[-1]
         for s in range(signal_length - 2, start_out_signal - 2, -1):
@@ -60,16 +59,16 @@ def transform_signal_part2(start_signal, start_out_signal):
     return signal
 
 
-def transform_signal_part2(start_signal, start_out_signal):
-    signal = start_signal[-1:-(len(start_signal)-start_out_signal) - 2:-1]
-    for p in range(PHASES):
-        print(p)
-        signal = np.cumsum(signal, dtype=np.int64)
+def transform_signal_part2_v2(start_signal, start_out_signal):
+    signal = start_signal[-1:-(len(start_signal)-start_out_signal) - 1:-1]
+    for _ in range(PHASES):
+        signal = np.cumsum(signal, dtype=np.uint)
         signal = (signal % 10).astype(np.byte)
     return signal
 
 
-#s2 = transform_signal_part2(signal_start_part2, output_position)
-#print(''.join(str(x) for x in s2[output_position:output_position + 8]))
-
 s2 = transform_signal_part2(signal_start_part2, output_position)
+print(''.join(str(x) for x in s2[output_position:output_position + 8]))
+
+s3 = transform_signal_part2_v2(signal_start_part2, output_position)
+print(''.join(str(x) for x in s3[-1:-9:-1]))
