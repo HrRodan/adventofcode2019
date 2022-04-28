@@ -3,13 +3,13 @@ Advent of Code
 
     [About][Events][Shop][Settings][Log Out]
 
-Martin 33*
-        //2019
+Martin 34*
+   var y=2019;
 
     [Calendar][AoC++][Sponsors][Leaderboard][Stats]
 
 Our sponsors help make Advent of Code possible:
-Novetta - While Santa has elves, we have TS/SCI data scientists rapidly prototyping ML solutions...hot chocolate included. Check us out.
+Shakti - Shakti merges database, language and connectivity in one
 --- Day 17: Set and Forget ---
 
 An early warning system detects an incoming solar flare and automatically activates the ship's electromagnetic shield. Unfortunately, this has cut off the Wi-Fi for many small robots that, unaware of the impending danger, are now trapped on exterior scaffolding on the unsafe side of the shield. To rescue them, you'll have to act quickly!
@@ -56,8 +56,6 @@ To calibrate the cameras, you need the sum of the alignment parameters. In the a
 Run your ASCII program. What is the sum of the alignment parameters for the scaffold intersections?
 
 Your puzzle answer was 4800.
-
-The first half of this puzzle is complete! It provides one gold star: *
 --- Part Two ---
 
 Now for the tricky part: notifying all the other robots about the solar flare. The vacuum robot can do this automatically if it gets into range of a robot. However, you can't see the other robots on the camera, so you need to be thorough instead: you need to make the vacuum robot visit every part of the scaffold at least once.
@@ -136,8 +134,12 @@ As the vacuum robot finds other robots and notifies them of the impending solar 
 
 After visiting every part of the scaffold at least once, how much dust does the vacuum robot report it has collected?
 
-Answer:
+Your puzzle answer was 982279.
 
-Although it hasn't changed, you can still get your puzzle input.
+Both parts of this puzzle are complete! They provide two gold stars: **
+
+At this point, you should return to your Advent calendar and try another puzzle.
+
+If you still want to see it, you can get your puzzle input.
 
 You can also [Shareon Mastodon] this puzzle.

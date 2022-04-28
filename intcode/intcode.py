@@ -1,9 +1,5 @@
 from collections import defaultdict, deque
-from itertools import permutations, islice
-from typing import List, Iterable, Iterator, Dict, Tuple
-
-import numpy as np
-from matplotlib import pyplot as plt
+from typing import Dict
 
 
 def string_to_program(program_raw: str):
@@ -14,7 +10,8 @@ def string_to_program(program_raw: str):
 
     return program_dict
 
-def read_program(path : str):
+
+def read_program(path: str):
     with open(path) as file:
         program_raw = file.readline().strip()
     return string_to_program(program_raw)
@@ -35,7 +32,8 @@ def get_set_position(mode: str, out: int, relative_base: int):
     return out if mode != '2' else out + relative_base
 
 
-def run_program(program_final: Dict[int, int], p_input: deque[int], debug = False):
+def run_program(program_start: Dict[int, int], p_input: deque[int], debug=False):
+    program_final = program_start.copy()
     i = 0
     relative_base = 0
     while True:

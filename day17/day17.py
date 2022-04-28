@@ -8,7 +8,7 @@ from intcode import run_program, read_program
 start_program = read_program('input.txt')
 
 p_input = deque([])
-output = list(run_program(start_program, p_input))
+output = list(run_program(start_program.copy(), p_input))
 output_to_print = ''.join(chr(x) for x in output)
 
 output_ascii_list = []
@@ -35,9 +35,75 @@ num_to_char = {v: k for k, v in char_to_num.items()}
 
 output_array = np.array(output_ascii_list).astype(np.ubyte)
 scaffolds = np.isin(output_array, scaffold_nums)
-scaffold_intersections = generic_filter(scaffolds, function=lambda x: np.sum(x) == 5,
+scaffold_intersections = generic_filter(scaffolds, function=np.all,
                                         footprint=((0, 1, 0), (1, 1, 1), (0, 1, 0)), mode='constant', cval=False)
 
 scaffold_intersections_points = np.transpose(np.nonzero(scaffold_intersections))
 result = np.prod(scaffold_intersections_points, axis=1).sum()
 print(result)
+
+# %%part 2
+TURN_RIGHT = {
+    (0, 1): (1, 0),
+    (1, 0): (0, -1),
+    (0, -1): (-1, 0),
+    (-1, 0): (0, 1)
+}
+directions = {
+    '^': (-1, 0),
+    'v': (1, 0),
+    '<': (0, -1),
+    '>': (0, 1)
+}
+TURN_LEFT = {v: k for k, v in TURN_RIGHT.items()}
+robot_nums = [v for k, v in char_to_num.items() if k not in ['.', '#']]
+scaffold_points = {tuple(x) for x in np.transpose(np.nonzero(scaffolds))}
+
+position = np.transpose(np.nonzero(np.isin(output_array, robot_nums)))[0]
+direction = directions[num_to_char[output_array[tuple(position)]]]
+next_step = position + direction
+
+path = []
+while True:
+    count = 0
+    if tuple(next_step) in scaffold_points:
+        while tuple(next_step) in scaffold_points:
+            count += 1
+            position = position + direction
+            next_step = position + direction
+        path.append(str(count))
+    else:
+        left = TURN_LEFT[direction]
+        right = TURN_RIGHT[direction]
+        if tuple(position + left) in scaffold_points:
+            direction = left
+            path.append('L')
+        elif tuple(position + right) in scaffold_points:
+            direction = right
+            path.append('R')
+        else:
+            break
+        next_step = position + direction
+
+path_str = ','.join(path)
+functionA = ['L', '12', 'L', '12', 'L', '6', 'L', '6']
+functionA_str = ','.join(functionA)
+path_str = path_str.replace(functionA_str, 'A')
+functionB = ['R', '8', 'R', '4', 'L', '12']
+functionB_str = ','.join(functionB)
+path_str = path_str.replace(functionB_str, 'B')
+functionC = ['L', '12', 'L', '6', 'R', '12', 'R', '8']
+functionC_str = ','.join(functionC)
+path_str = path_str.replace(functionC_str, 'C')
+
+mmr = [ord(x) for x in path_str] + [10]
+functionA_ascii = [ord(x) for x in functionA_str] + [10]
+functionB_ascii = [ord(x) for x in functionB_str] + [10]
+functionC_ascii = [ord(x) for x in functionC_str] + [10]
+
+start_program_part2 = start_program.copy()
+start_program_part2[0] = 2
+p_input_part2 = deque(mmr + functionA_ascii + functionB_ascii + functionC_ascii + [ord('n'), 10])
+
+output_part2 = list(run_program(start_program_part2, p_input_part2))
+print(output_part2[-1])
