@@ -11,6 +11,7 @@ p_input = deque([])
 output = list(run_program(start_program.copy(), p_input))
 output_to_print = ''.join(chr(x) for x in output)
 
+#convert to array
 output_ascii_list = []
 temp_output = []
 for o in output:
@@ -59,32 +60,33 @@ TURN_LEFT = {v: k for k, v in TURN_RIGHT.items()}
 robot_nums = [v for k, v in char_to_num.items() if k not in ['.', '#']]
 scaffold_points = {tuple(x) for x in np.transpose(np.nonzero(scaffolds))}
 
+#starting position and direction
 position = np.transpose(np.nonzero(np.isin(output_array, robot_nums)))[0]
 direction = directions[num_to_char[output_array[tuple(position)]]]
-next_step = position + direction
 
 path = []
 while True:
+    next_step = position + direction
     count = 0
-    if tuple(next_step) in scaffold_points:
-        while tuple(next_step) in scaffold_points:
-            count += 1
-            position = position + direction
-            next_step = position + direction
-        path.append(str(count))
-    else:
-        left = TURN_LEFT[direction]
-        right = TURN_RIGHT[direction]
-        if tuple(position + left) in scaffold_points:
-            direction = left
-            path.append('L')
-        elif tuple(position + right) in scaffold_points:
-            direction = right
-            path.append('R')
-        else:
-            break
+    # move forward until outside of scaffold
+    while tuple(next_step) in scaffold_points:
+        count += 1
+        position = position + direction
         next_step = position + direction
+    if count > 0:
+        path.append(str(count))
+    left = TURN_LEFT[direction]
+    right = TURN_RIGHT[direction]
+    if tuple(position + left) in scaffold_points:
+        direction = left
+        path.append('L')
+    elif tuple(position + right) in scaffold_points:
+        direction = right
+        path.append('R')
+    else:
+        break
 
+# find functions by looking at the complete path
 path_str = ','.join(path)
 functionA = ['L', '12', 'L', '12', 'L', '6', 'L', '6']
 functionA_str = ','.join(functionA)
@@ -96,6 +98,7 @@ functionC = ['L', '12', 'L', '6', 'R', '12', 'R', '8']
 functionC_str = ','.join(functionC)
 path_str = path_str.replace(functionC_str, 'C')
 
+# build input
 mmr = [ord(x) for x in path_str] + [10]
 functionA_ascii = [ord(x) for x in functionA_str] + [10]
 functionB_ascii = [ord(x) for x in functionB_str] + [10]
