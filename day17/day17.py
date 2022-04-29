@@ -1,4 +1,7 @@
+import collections
 from collections import deque
+from itertools import product, islice
+import re
 
 import numpy as np
 from scipy.ndimage import generic_filter
@@ -11,7 +14,7 @@ p_input = deque([])
 output = list(run_program(start_program.copy(), p_input))
 output_to_print = ''.join(chr(x) for x in output)
 
-#convert to array
+# convert to array
 output_ascii_list = []
 temp_output = []
 for o in output:
@@ -60,7 +63,7 @@ TURN_LEFT = {v: k for k, v in TURN_RIGHT.items()}
 robot_nums = [v for k, v in char_to_num.items() if k not in ['.', '#']]
 scaffold_points = {tuple(x) for x in np.transpose(np.nonzero(scaffolds))}
 
-#starting position and direction
+# starting position and direction
 position = np.transpose(np.nonzero(np.isin(output_array, robot_nums)))[0]
 direction = directions[num_to_char[output_array[tuple(position)]]]
 
@@ -88,6 +91,7 @@ while True:
 
 # find functions by looking at the complete path
 path_str = ','.join(path)
+path_str_raw = path_str
 functionA = ['L', '12', 'L', '12', 'L', '6', 'L', '6']
 functionA_str = ','.join(functionA)
 path_str = path_str.replace(functionA_str, 'A')
@@ -110,3 +114,31 @@ p_input_part2 = deque(mmr + functionA_ascii + functionB_ascii + functionC_ascii 
 
 output_part2 = list(run_program(start_program_part2, p_input_part2))
 print(output_part2[-1])
+
+
+# %% generate Functions by brute Force
+def sliding_window(iterable, n):
+    # sliding_window('ABCDEFG', 4) -> ABCD BCDE CDEF DEFG
+    it = iter(iterable)
+    window = collections.deque(islice(it, n), maxlen=n)
+    if len(window) == n:
+        yield tuple(window)
+    for x in it:
+        window.append(x)
+        yield tuple(window)
+
+
+def eval():
+    for i, j, k in product(range(2, 11, 2), repeat=3):
+        for x in sliding_window(path, i):
+            for y in sliding_window(path, j):
+                for z in sliding_window(path, k):
+                    path_test_str = path_str_raw
+                    for f, letter in zip([x, y, z], ['A', 'B', 'C']):
+                        txt = ','.join(f)
+                        path_test_str = path_test_str.replace(txt, letter)
+                    if re.match(r'^[ABC,]*$', path_test_str):
+                        return (x, y, z, path_test_str)
+
+
+funcA_gen, funcB_gen, funcC_gen, path_final = eval()
