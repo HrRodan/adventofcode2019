@@ -74,7 +74,7 @@ while True:
     # move forward until outside of scaffold
     while tuple(next_step) in scaffold_points:
         count += 1
-        position = position + direction
+        position = next_step
         next_step = position + direction
     if count > 0:
         path.append(str(count))
@@ -141,4 +141,4 @@ def eval():
                         return (x, y, z, path_test_str)
 
 
-funcA_gen, funcB_gen, funcC_gen, path_final = eval()
+#funcA_gen, funcB_gen, funcC_gen, path_final = eval()
