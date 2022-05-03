@@ -1,9 +1,10 @@
 import string
-from typing import Tuple
+from collections import defaultdict
+from typing import Tuple, Dict, Set
 
 import networkx as nx
 
-with open('input_test.txt') as file:
+with open('input_part2.txt') as file:
     cave = [list(line.strip()) for line in file.readlines()]
 
 POINT_TYP = Tuple[int, int]
@@ -11,20 +12,24 @@ POINT_TYP = Tuple[int, int]
 spaces = set()
 keys = {}
 doors = {}
+start = set()
 for i, row in enumerate(cave):
-    for j, value in enumerate(row):
-        if value != '#':
+    for j, value2 in enumerate(row):
+        if value2 != '#':
             spaces.add((i, j))
-        if value == '@':
-            start = (i, j)
-        if value in string.ascii_lowercase:
-            keys[value] = (i, j)
-        if value in string.ascii_uppercase:
-            doors[value] = (i, j)
+        if value2 == '@':
+            start.update({(i, j)})
+        if value2 in string.ascii_lowercase:
+            keys[value2] = (i, j)
+        if value2 in string.ascii_uppercase:
+            doors[value2] = (i, j)
 
 key_points = {value: key for key, value in keys.items()}
-key_points[start] = '@'
+door_points = {value: key for key, value in doors.items()}
+start_points = {s: f'@{i}' for i, s in enumerate(start)}
+key_and_start = key_points | start_points
 neighbors = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+all_keys = set(keys.keys())
 
 
 def add_tuple(t1: POINT_TYP, t2: POINT_TYP):
@@ -38,31 +43,38 @@ for p in spaces:
             G_spaces.add_edge(p, x)
             G_spaces.nodes[x]['label'] = cave[x[0]][x[1]]
 
-G_walk = G_spaces.copy()
-# close all doors in Graph
-G_walk.remove_nodes_from(doors.values())
+links: Dict[str, Dict[str, Tuple[int, set]]] = defaultdict(dict)
+for k1, value1 in key_and_start.items():
+    for k2, value2 in key_and_start.items():
+        if k1 != k2:
+            try:
+                shortest_path = nx.shortest_path(G_spaces, k1, k2)
+            except nx.exception.NetworkXNoPath:
+                continue
+            # make doors lowercase to enable list compare
+            doors_on_path = {cave[x][y] for x, y in shortest_path}.intersection(doors.keys())
+            links[value1][value2] = (len(shortest_path) - 1, {x.lower() for x in doors_on_path})
 
-collected_keys = {}
-G_compressed = nx.Graph()
-G_compressed.add_node(start)
-key_points_set = set(key_points.keys())
+cache = {}
 
-for _ in range(2):
-    for k1 in list(G_compressed.nodes):
-        for k2, value in key_points.items():
-            if k1 != k2 and nx.has_path(G_walk, k1, k2):
-                G_compressed.add_node(k2, label=value)
-                shortest_path = nx.shortest_path(G_walk, k1, k2)
-                if not key_points_set.intersection(shortest_path[1:-1]):
-                    G_compressed.add_edge(k1, k2, weight=len(shortest_path) - 1)
-    collected_keys = {z for x, y in G_compressed.nodes if (z := cave[x][y]) in keys}
-    for k in collected_keys:
-        if d := k.upper() in doors:
-            door_point = doors[d]
-            G_walk.add_node(door_point, label=d)
-            for n in neighbors:
-                if (x := add_tuple(door_point, n)) in spaces:
-                    G_walk.add_edge(x, door_point)
-            for n in list(G_compressed.nodes):
-                shortest_path = nx.shortest_path(G_walk, n, door_point)
-                G_compressed.add_edge(n, door_point, weight=len(shortest_path) - 1)
+def walk(start_point: Set[str], needed_keys: set, length: int):
+    if not needed_keys:
+        return length
+    cache_tuple = (tuple(sorted(start_point)), tuple(needed_keys))
+    if cache_tuple in cache:
+        return length + cache[cache_tuple]
+    min_length = float("inf")
+    for key in needed_keys:
+        for s in start_point:
+            link = links[s]
+            if key in link:
+                shortest_path_length, doors_on_path = link[key]
+                if length + shortest_path_length < min_length and doors_on_path.isdisjoint(needed_keys):
+                    length_full = walk((start_point - {s}).union(key), needed_keys - {key}, length + shortest_path_length)
+                    min_length = min(length_full, min_length)
+    cache[cache_tuple] = min_length - length
+    return min_length
+
+
+a = walk(set(start_points.values()), all_keys, 0)
+print(a)
