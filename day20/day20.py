@@ -1,10 +1,11 @@
+import heapq
 import string
 from collections import defaultdict
-from typing import Tuple
+from typing import Tuple, Set
 
 import networkx as nx
 
-with open('input_test.txt') as file:
+with open('input.txt') as file:
     maze = [list(s.rstrip('\n')) for s in file.readlines()]
 
 POINT_TYPE = Tuple[int, int]
@@ -12,8 +13,8 @@ POINT_TYPE = Tuple[int, int]
 next_tiles = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 max_width = max(len(x) for x in maze)
 max_height = len(maze)
-start = 'AA'
-end = 'ZZ'
+start = ('AA', 'out')
+end = ('ZZ', 'out')
 
 
 def add_tuple(t1: POINT_TYPE, t2: POINT_TYPE):
@@ -44,59 +45,64 @@ for position, letter in portal_letter_points.items():
 
 # Build Graph
 G = nx.Graph()
-
 for p in passages:
     for n in next_tiles:
         test_point = add_tuple(p, n)
         if test_point in passages:
             G.add_edge(p, test_point)
 
-inner_portals = set()
-outer_portals = set()
+portals_inner_outer = {}
 for portal, connections in portals.items():
-    if portal not in ['AA', 'ZZ']:
-        #G.add_edge(connections[0], connections[1], label=portal)
-        for connection in connections:
-            c1, c2 = connection
-            if c1 not in (max_height - 3, 2) and c2 not in (max_width - 3, 2):
-                inner_portals.add((c1, c2))
-            else:
-                outer_portals.add((c1, c2))
+    for connection in connections:
+        c1, c2 = connection
+        if c1 not in (max_height - 3, 2) and c2 not in (max_width - 3, 2):
+            portals_inner_outer[(portal, 'in')] = (c1, c2)
+        else:
+            portals_inner_outer[(portal, 'out')] = (c1, c2)
 
+# generate compressed graph connecting all portals
 G_compressed = nx.Graph()
-for portal1, connections1 in portals.items():
-    for portal2, connections2 in portals.items():
-        if portal1 != portal2 and (portal2, portal1) not in G_compressed.edges:
-            for c1 in connections1:
-                for c2 in connections2:
-                    try:
-                        shortest_path_length = nx.shortest_path_length(G, c1, c2)
-                        if portal1 != end and portal2 != end:
-                            shortest_path_length += 1
-                        G_compressed.add_edge(portal1, portal2, weight=shortest_path_length)
-                    except nx.exception.NetworkXNoPath:
-                        continue
-
-all_portals = inner_portals.union(outer_portals)
+for (portal1, io1), pos1 in portals_inner_outer.items():
+    for (portal2, io2), pos2 in portals_inner_outer.items():
+        if ((portal2, io2), (portal1, io1)) not in G_compressed.edges:
+            if portal1 != portal2:
+                try:
+                    shortest_path_length = nx.shortest_path_length(G, pos1, pos2)
+                    G_compressed.add_edge((portal1, io1), (portal2, io2), weight=shortest_path_length)
+                except nx.exception.NetworkXNoPath:
+                    continue
+            elif io1 != io2:
+                G_compressed.add_edge((portal1, io1), (portal2, io2), weight=1)
 
 print(nx.shortest_path_length(G_compressed, start, end, weight='weight'))
 
 # part2
-possible_paths = {}
 
-for i, path in enumerate(nx.all_simple_paths(G_compressed, start, end)):
-    #print(path)
-    level = 0
-    last_tile = start
-    for e in path:
-        if last_tile not in all_portals:
-            if e in outer_portals:
-                level += 1
-            elif e in inner_portals:
-                level -= 1
-                just_passed_portal = True
-        last_tile = e
-    if level == 0:
-        possible_paths[i] = len(path) - 1
+# key is always portal, in/out and level
+shortest_path_length = {(start, 0): 0, (end, 0): float("inf")}
+portals_to_visit = []
+# priority -> Tuple [ level, path_length ] to force upward search
+heapq.heappush(portals_to_visit, ((0, 0), start))
+start_end = {start, end}
 
-#print(min(possible_paths.values()))
+# dijiska alogorithm
+while portals_to_visit:
+    (level_current, length_current), portal_current = heapq.heappop(portals_to_visit)
+    portal_current_letter, io_current = portal_current
+    for portal_next, edge_dict in G_compressed[portal_current].items():
+        portal_next_letter, io_next = portal_next
+        path_length_next = edge_dict['weight'] + length_current
+        level_diff = 0
+        if portal_next_letter == portal_current_letter:
+            level_diff = 1 if io_current == 'in' else -1
+        level_next = level_current + level_diff
+        portal_level_key_next = (portal_next, level_next)
+        if path_length_next < shortest_path_length[(end, 0)] \
+                and (portal_next not in start_end or level_next == 0) \
+                and (io_next != 'out' or level_next != 0 or portal_next == end) \
+                and (portal_level_key_next not in shortest_path_length
+                     or path_length_next < shortest_path_length[portal_level_key_next]):
+            shortest_path_length[portal_level_key_next] = path_length_next
+            heapq.heappush(portals_to_visit, ((level_next, path_length_next), portal_next))
+
+print(shortest_path_length[((end), 0)])
