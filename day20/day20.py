@@ -85,7 +85,7 @@ portals_to_visit = []
 heapq.heappush(portals_to_visit, ((0, 0), start))
 start_end = {start, end}
 
-# dijiska alogorithm
+# Dijkstra's algorithm
 while portals_to_visit:
     (level_current, length_current), portal_current = heapq.heappop(portals_to_visit)
     portal_current_letter, io_current = portal_current
