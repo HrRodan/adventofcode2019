@@ -46,5 +46,6 @@ AND T J
 cmd_ascii_part2 = convert_cmd_to_ascii_run(cmd_part2)
 p_input_part2 = deque(cmd_ascii_part2)
 output_part2 = list(run_program(start_program, p_input_part2))
-#fail_output_str = ''.join([chr(x) for x in output])
+#fail_output_str = ''.join(['-' if chr(x) == '.' else chr(x) for x in output_part2[:-1]])
+#print(fail_output_str, end = '')
 print(output_part2[-1])
