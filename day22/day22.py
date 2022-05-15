@@ -61,7 +61,7 @@ for s, n in shuffles:
         deck = deal_with_increment(deck, n)
     elif s == 'cut':
         deck = cut(deck, n)
-    #print(deck)
+    # print(deck)
 
 r1 = deck.index(2019)
 print(r1)
@@ -76,10 +76,8 @@ for i in range(100000):
         elif s == 'deal with increment':
             position_p2 = solve_linear_congruence(n, position_p2, DECK_SIZE_PART2)
         elif s == 'cut':
-            position_p2 = position_p2 + n
-            if position_p2 < 0:
-                position_p2 = DECK_SIZE_PART2 + position_p2
-            position_p2 = position_p2 % DECK_SIZE
-    #print(position_p2)
+            position_p2 = (position_p2 + n) % DECK_SIZE_PART2
+    if position_p2 == 2020:
+        print(i)
 
 print(position_p2)
