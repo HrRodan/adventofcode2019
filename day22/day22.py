@@ -68,16 +68,24 @@ print(r1)
 
 # part 2
 DECK_SIZE_PART2 = 119315717514047
-position_p2 = 2020
-for i in range(100000):
+# number_shuffles = 101741582076661
+number_shuffles = 3
+
+# polynom f(x) = ax+b
+a, b = 1, 0
+start_postion = 2020
+position_p2 = start_postion
+for i in range(number_shuffles):
     for s, n in shuffles[::-1]:
         if s == 'deal into new stack':
+            a = -a
+            b = DECK_SIZE_PART2 - b -1
             position_p2 = DECK_SIZE_PART2 - position_p2 - 1
         elif s == 'deal with increment':
             position_p2 = solve_linear_congruence(n, position_p2, DECK_SIZE_PART2)
+
         elif s == 'cut':
             position_p2 = (position_p2 + n) % DECK_SIZE_PART2
-    if position_p2 == 2020:
-        print(i)
+    print(position_p2)
 
-print(position_p2)
+print(position_p2_test)
