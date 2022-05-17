@@ -30,12 +30,6 @@ def deal_with_increment(deck, inc: int):
 deck = DECK_START.copy()
 
 
-def get_previous_mod_reversed(inc: int, pos):
-    # reverse modulo https://en.wikipedia.org/wiki/Modular_multiplicative_inverse
-    # solvable for Deck Size = prime
-    return pow(inc, DECK_SIZE + pos - 3, DECK_SIZE + pos - 1)
-
-
 def solve_linear_congruence(a, b, m):
     """ Describe all solutions to ax = b  (mod m), or raise ValueError.
     https://stackoverflow.com/questions/63021828/solving-modular-linear-congruences-for-large-numbers
@@ -45,13 +39,6 @@ def solve_linear_congruence(a, b, m):
         raise ValueError("No solutions")
     a, b, m = a // g, b // g, m // g
     return pow(a, -1, m) * b % m
-
-
-def get_value(count_order: int, offset: int, inc: int, position: int):
-    if count_order < 0:
-        return ((DECK_SIZE - position - 1 + offset) * inc) % DECK_SIZE
-    else:
-        return ((position + offset) * inc) % DECK_SIZE
 
 
 for s, n in shuffles:
@@ -68,24 +55,21 @@ print(r1)
 
 # part 2
 DECK_SIZE_PART2 = 119315717514047
-# number_shuffles = 101741582076661
-number_shuffles = 3
+number_shuffles = 101741582076661
 
 # polynom f(x) = ax+b
 a, b = 1, 0
 start_postion = 2020
-position_p2 = start_postion
-for i in range(number_shuffles):
-    for s, n in shuffles[::-1]:
-        if s == 'deal into new stack':
-            a = -a
-            b = DECK_SIZE_PART2 - b -1
-            position_p2 = DECK_SIZE_PART2 - position_p2 - 1
-        elif s == 'deal with increment':
-            position_p2 = solve_linear_congruence(n, position_p2, DECK_SIZE_PART2)
-
-        elif s == 'cut':
-            position_p2 = (position_p2 + n) % DECK_SIZE_PART2
-    print(position_p2)
-
-print(position_p2_test)
+for s, n in shuffles[::-1]:
+    if s == 'cut':
+        b = (b + n) % DECK_SIZE_PART2
+    elif s == 'deal into new stack':
+        a = -a
+        b = DECK_SIZE_PART2 - b - 1
+    elif s == 'deal with increment':
+        z = pow(n, DECK_SIZE_PART2-2, DECK_SIZE_PART2)
+        a = a * z % DECK_SIZE_PART2
+        b = b * z % DECK_SIZE_PART2
+# see solution.md
+print((pow(a, number_shuffles, DECK_SIZE_PART2) * start_postion + (pow(a, number_shuffles, DECK_SIZE_PART2) - 1) *
+       pow(a-1, DECK_SIZE_PART2-2, DECK_SIZE_PART2) * b) % DECK_SIZE_PART2)
