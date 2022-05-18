@@ -1,5 +1,5 @@
 from collections import deque
-from itertools import islice
+from itertools import islice, count
 from typing import Dict, Tuple, Iterator
 
 from intcode import read_program, run_program
@@ -21,16 +21,16 @@ def network():
     NAT = None
     idle_stat = [False for _ in range(50)]
     seen_nat_y = set()
-    for k in range(100):
-        # print(k)
+    for k in count(0):
         for n, (p, m) in computers.items():
-            # consume que
-            # print(n)
+            # input
             while ((message := next(p)) == 'waiting for input'):
                 if not m:
-                    idle_stat[n] = True
+                    # ques are empty in first iteration
+                    if k != 0:
+                        idle_stat[n] = True
                     break
-
+            # output
             while message != 'waiting for input':
                 idle_stat[n] = False
                 x, y = islice(p, 2)
@@ -42,7 +42,7 @@ def network():
                 else:
                     message_q[message].extend([x, y])
                 message = next(p)
-
+        #check idle state
         if all(idle_stat):
             message_q[0].extend(NAT)
             y = NAT[1]
