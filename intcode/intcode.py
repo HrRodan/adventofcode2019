@@ -1,5 +1,5 @@
 from collections import defaultdict, deque
-from typing import Dict
+from typing import Dict, Iterable, Iterator
 
 
 def string_to_program(program_raw: str):
@@ -32,7 +32,8 @@ def get_set_position(mode: str, out: int, relative_base: int):
     return out if mode != '2' else out + relative_base
 
 
-def run_program(program_start: Dict[int, int], p_input: deque[int], debug=False):
+def run_program(program_start: Dict[int, int], p_input: deque[int], wait_for_input=False, use_default = False,
+                default_value = -1) -> Iterator[int]:
     program_final = program_start.copy()
     i = 0
     relative_base = 0
@@ -53,7 +54,12 @@ def run_program(program_start: Dict[int, int], p_input: deque[int], debug=False)
         elif opcode == 3:
             out = program_final[i + 1]
             out_value = get_set_position(mode[-1], out, relative_base)
-            program_final[out_value] = p_input.popleft()
+            if wait_for_input:
+                yield 'waiting for input'
+            if use_default and not p_input:
+                program_final[out_value] = default_value
+            else:
+                program_final[out_value] = p_input.popleft()
             i += 2
         elif opcode == 4:
             p = program_final[i + 1]
