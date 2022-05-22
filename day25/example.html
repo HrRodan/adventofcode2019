@@ -1,0 +1,120 @@
+<html>
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.css" type="text/css" />
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis-network.min.js"> </script>
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+
+<style type="text/css">
+
+        #mynetwork {
+            width: 100%;
+            height: 750px;
+            background-color: #ffffff;
+            border: 1px solid lightgray;
+            position: relative;
+            float: left;
+        }
+
+        
+
+        
+        #config {
+            float: left;
+            width: 400px;
+            height: 600px;
+        }
+        
+
+        
+</style>
+
+</head>
+
+<body>
+<div id = "mynetwork"></div>
+
+
+<div id = "config"></div>
+
+<script type="text/javascript">
+
+    // initialize global variables.
+    var edges;
+    var nodes;
+    var network; 
+    var container;
+    var options, data;
+
+    
+    // This method is responsible for drawing the graph, returns the drawn network
+    function drawGraph() {
+        var container = document.getElementById('mynetwork');
+        
+        
+
+        // parsing and collecting nodes and edges from the python
+        nodes = new vis.DataSet([{"id": "== Hull Breach ==", "label": "== Hull Breach ==", "shape": "dot", "size": 10}, {"id": "== Engineering ==", "label": "== Engineering ==", "shape": "dot", "size": 10}, {"id": "== Science Lab ==", "label": "== Science Lab ==", "shape": "dot", "size": 10}, {"id": "== Hallway ==", "label": "== Hallway ==", "shape": "dot", "size": 10}, {"id": "== Sick Bay ==", "label": "== Sick Bay ==", "shape": "dot", "size": 10}, {"id": "== Navigation ==", "label": "== Navigation ==", "shape": "dot", "size": 10}, {"id": "== Holodeck ==", "label": "== Holodeck ==", "shape": "dot", "size": 10}, {"id": "== Crew Quarters ==", "label": "== Crew Quarters ==", "shape": "dot", "size": 10}, {"id": "== Hot Chocolate Fountain ==", "label": "== Hot Chocolate Fountain ==", "shape": "dot", "size": 10}, {"id": "== Warp Drive Maintenance ==", "label": "== Warp Drive Maintenance ==", "shape": "dot", "size": 10}, {"id": "== Stables ==", "label": "== Stables ==", "shape": "dot", "size": 10}, {"id": "== Corridor ==", "label": "== Corridor ==", "shape": "dot", "size": 10}, {"id": "== Observatory ==", "label": "== Observatory ==", "shape": "dot", "size": 10}, {"id": "== Kitchen ==", "label": "== Kitchen ==", "shape": "dot", "size": 10}, {"id": "Cant go that way!", "label": "Cant go that way!", "shape": "dot", "size": 10}, {"id": "== Gift Wrapping Center ==", "label": "== Gift Wrapping Center ==", "shape": "dot", "size": 10}, {"id": "== Pressure-Sensitive Floor ==", "label": "== Pressure-Sensitive Floor ==", "shape": "dot", "size": 10}, {"id": "== Security Checkpoint ==", "label": "== Security Checkpoint ==", "shape": "dot", "size": 10}, {"id": "== Arcade ==", "label": "== Arcade ==", "shape": "dot", "size": 10}, {"id": "== Storage ==", "label": "== Storage ==", "shape": "dot", "size": 10}, {"id": "== Passages ==", "label": "== Passages ==", "shape": "dot", "size": 10}]);
+        edges = new vis.DataSet([{"attr": {"label": "east"}, "from": "== Hull Breach ==", "label": 1, "to": "== Engineering ==", "weight": 1}, {"attr": {"label": "south"}, "from": "== Hull Breach ==", "label": 1, "to": "== Science Lab ==", "weight": 1}, {"attr": {"label": "west"}, "from": "== Hull Breach ==", "label": 1, "to": "== Hallway ==", "weight": 1}, {"attr": {"label": "east"}, "from": "== Engineering ==", "label": 1, "to": "== Sick Bay ==", "weight": 1}, {"attr": {"label": "south"}, "from": "== Hallway ==", "label": 1, "to": "== Navigation ==", "weight": 1}, {"attr": {"label": "west"}, "from": "== Hallway ==", "label": 1, "to": "== Holodeck ==", "weight": 1}, {"attr": {"label": "south"}, "from": "== Sick Bay ==", "label": 1, "to": "== Crew Quarters ==", "weight": 1}, {"attr": {"label": "east"}, "from": "== Crew Quarters ==", "label": 1, "to": "== Hot Chocolate Fountain ==", "weight": 1}, {"attr": {"label": "west"}, "from": "== Crew Quarters ==", "label": 1, "to": "== Warp Drive Maintenance ==", "weight": 1}, {"attr": {"label": "north"}, "from": "== Hot Chocolate Fountain ==", "label": 1, "to": "== Stables ==", "weight": 1}, {"attr": {"label": "south"}, "from": "== Hot Chocolate Fountain ==", "label": 1, "to": "== Corridor ==", "weight": 1}, {"attr": {"label": "south"}, "from": "== Warp Drive Maintenance ==", "label": 1, "to": "== Observatory ==", "weight": 1}, {"attr": {"label": "west"}, "from": "== Stables ==", "label": 1, "to": "== Kitchen ==", "weight": 1}, {"attr": {"label": "east"}, "from": "== Corridor ==", "label": 1, "to": "Cant go that way!", "weight": 1}, {"attr": {"label": "west"}, "from": "== Observatory ==", "label": 1, "to": "== Gift Wrapping Center ==", "weight": 1}, {"attr": {"label": "south"}, "from": "== Gift Wrapping Center ==", "label": 1, "to": "== Pressure-Sensitive Floor ==", "weight": 1}, {"attr": {"label": "south"}, "from": "== Pressure-Sensitive Floor ==", "label": 1, "to": "== Pressure-Sensitive Floor ==", "weight": 1}, {"attr": {"label": "north"}, "from": "== Security Checkpoint ==", "label": 1, "to": "== Gift Wrapping Center ==", "weight": 1}, {"attr": {"label": "south"}, "from": "== Security Checkpoint ==", "label": 1, "to": "== Pressure-Sensitive Floor ==", "weight": 1}, {"attr": {"label": "east"}, "from": "== Navigation ==", "label": 1, "to": "== Arcade ==", "weight": 1}, {"attr": {"label": "south"}, "from": "== Navigation ==", "label": 1, "to": "== Storage ==", "weight": 1}, {"attr": {"label": "north"}, "from": "== Holodeck ==", "label": 1, "to": "== Passages ==", "weight": 1}]);
+
+        // adding nodes and edges to the graph
+        data = {nodes: nodes, edges: edges};
+
+        var options = {
+    "configure": {
+        "enabled": true
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": false,
+            "type": "continuous"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+        
+        
+
+        
+        // if this network requires displaying the configure window,
+        // put it in its div
+        options.configure["container"] = document.getElementById("config");
+        
+
+        network = new vis.Network(container, data, options);
+	 
+        
+
+
+        
+
+        return network;
+
+    }
+
+    drawGraph();
+
+</script>
+</body>
+</html>

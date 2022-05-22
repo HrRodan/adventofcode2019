@@ -1,6 +1,7 @@
 import random
 import re
 from collections import deque, defaultdict
+from itertools import combinations
 
 from intcode import read_program, run_program
 
@@ -17,6 +18,13 @@ cmd_map = {
     'west': west_cmd,
     'north': north_cmd,
     'south': south_cmd
+}
+
+opposite_direction = {
+    'east': 'west',
+    'north': 'south',
+    'south': 'north',
+    'west': 'east'
 }
 
 
@@ -50,34 +58,103 @@ def get_items(output_str: str):
     return set(re.findall(r'(?:- )([a-z ]+)', output_str)) - {'east', 'south', 'west', 'north'}
 
 
+def get_inventory():
+    p_input.clear()
+    p_input.extend(inv_cmd)
+    output_str = move_and_get_output()
+    return get_items(output_str)
+
+
 def get_room(output_str: str):
     return re.search(r'==[ \S]+==', output_str).group()
 
 
-visited = set()
+def move_to(target: str, r):
+    room = get_room(r)
+    while room != target:
+        # print(room)
+        doors = get_doors_from_output(r)
+        next_door = random.choice(doors)
+        p_input.extend(cmd_map[next_door])
+        r_temp = move_and_get_output()
+        if r_temp == "\nYou can't go that way.\n\nCommand?\n":
+            continue
+        r = r_temp
+        room = get_room(r)
+
+    return r
+
+
 r = move_and_get_output()
-available_moves = defaultdict(set)
-done_moves = defaultdict(set)
-print(r)
-for _ in range(1000):
+moves = {}
+rooms = defaultdict(set)
+
+# generate map by randomness
+for i in range(10000):
     doors = get_doors_from_output(r)
     room = get_room(r)
     for d in doors:
-        if d not in done_moves[room]:
-            available_moves[room].add(d)
-    for item in get_items(r) - {'giant electromagnet', 'escape pod', 'photons', 'molten lava', 'infinite loop'}:
+        moves.setdefault((room, d), 'not visited')
+    if 'not visited' not in moves.values():
+        print(i)
+        break
+    # take all items
+    room_items = get_items(r)
+    rooms[room].update(room_items)
+
+    for item in room_items - {'giant electromagnet', 'escape pod', 'photons', 'molten lava', 'infinite loop'}:
         p_input.extend(take_cmd(item))
         move_and_get_output()
-    next_door = random.choice(doors)
-    done_moves[room].add(next_door)
-    available_moves[room].discard(next_door)
+
+    # choose next door
+    not_visited = {(room, d) for d in doors} - {k for k, v in moves.items() if v != 'not visited'}
+    if not_visited:
+        _, next_door = random.choice(tuple(not_visited))
+    else:
+        next_door = random.choice(doors)
+
     p_input.extend(cmd_map[next_door])
+
     r_temp = move_and_get_output()
     if r_temp == "\nYou can't go that way.\n\nCommand?\n":
+        moves[(room, next_door)] = 'Cant go that way!'
         continue
+    next_room = get_room(r_temp)
+    moves[(room, next_door)] = next_room
+    moves[(next_room, opposite_direction[next_door])] = room
+    # if room == '== Pressure-Sensitive Floor ==':
+    #     print(r)
     r = r_temp
-    print(room)
-    #print(r)
 
-p_input.extend(inv_cmd)
-print(move_and_get_output())
+inv_all = get_inventory()
+r = move_to('== Security Checkpoint ==', r)
+for k in range(1, 5):
+    for c in combinations(inv_all, k):
+        p_input.clear()
+        current_inv = get_inventory()
+        # drop all
+        for item in current_inv:
+            p_input.extend(drop_cmd(item))
+            move_and_get_output()
+        # take necessary
+        for item in c:
+            p_input.extend(take_cmd(item))
+            move_and_get_output()
+
+        p_input.clear()
+        p_input.extend(south_cmd)
+        pressure_plate = move_and_get_output()
+        print(get_room(pressure_plate))
+        #('easter egg', 'mug', 'space heater', 'sand')
+        if 'Alert!' not in pressure_plate and get_room(pressure_plate) != '== Security Checkpoint ==':
+            print(get_inventory())
+            print(pressure_plate)
+
+# G = nx.MultiDiGraph()
+# for (room, direction), next_room in moves.items():
+#     G.add_edge(room, next_room, attr={'label':direction})
+#
+# net = Network(height='750px', width='100%')
+# net.from_nx(G)
+# net.show_buttons()
+# net.show('example.html')
